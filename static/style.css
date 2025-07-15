@@ -1,0 +1,19 @@
+
+/* Aplica la fuente moderna de Google Fonts en toda la aplicación */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Un pequeño ajuste para que los formularios de eliminación se vean bien */
+.form-inline {
+    display: inline;
+}
+
+/* Estilo personalizado para el estado de Franco en el reporte, para que resalte más */
+.estado-franco {
+    font-weight: bold;
+    color: #f8d7da;
+    background-color: rgba(220, 53, 69, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+}

@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="card-title">Editando Plato del Menú</h2>
+        <h6 class="card-subtitle mb-2 text-muted">{{ menu_item.menu_date|format_es('full') }}</h6>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="menu_type" class="form-label">Tipo de Plato:</label>
+                <input type="text" class="form-control" id="menu_type" name="menu_type" value="{{ menu_item.menu_type }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Descripción del Plato:</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required>{{ menu_item.description }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Cambios</button>
+            <a href="{{ url_for('admin_manage_menu') }}" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

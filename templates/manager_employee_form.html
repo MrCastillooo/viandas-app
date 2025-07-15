@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="card-title">{{ title }}</h2>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">Nombre Completo:</label>
+                <input type="text" class="form-control" id="name" name="name" required value="{{ employee.name if employee else '' }}">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required value="{{ employee.email if employee else '' }}">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña:</label>
+                <input type="password" class="form-control" id="password" name="password" {% if not employee %}required{% endif %}>
+                <div class="form-text">{% if employee %}Dejar en blanco para no cambiar la contraseña.{% endif %}</div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar</button>
+            <a href="{{ url_for('manager_personnel') }}" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

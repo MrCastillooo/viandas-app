@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="card-title">Configuración General</h2>
+        <form action="{{ url_for('admin_settings') }}" method="POST">
+            <div class="mb-3">
+                <label for="week_start_date" class="form-label"><h4>Semana Activa del Menú</h4></label>
+                <p class="text-white-50">Selecciona el Lunes de la semana que quieres que todos los usuarios vean.</p>
+                <input type="date" class="form-control" id="week_start_date" name="week_start_date" value="{{ current_setting.value if current_setting else '' }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

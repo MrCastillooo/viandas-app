@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">{{ title }}</h2>
+    </div>
+    <p class="text-white-50">Para cada día, elige una opción: un plato (marcando almuerzo o cena) o márcalo como día Franco. Si no seleccionas nada, se considera que no hay pedido.</p>
+
+    <form action="{{ save_url }}" method="POST">
+        {% for day in week_dates %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ day|format_es('full') }}</h4>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="radio" role="switch" name="selection_type-{{ day.isoformat() }}" value="franco" id="franco-{{ day.isoformat() }}" {% if existing_orders.get(day) and existing_orders.get(day).meal_type == 'Franco' %}checked{% endif %}>
+                        <label class="form-check-label" for="franco-{{ day.isoformat() }}"><i class="bi bi-cup-hot-fill"></i> Marcar como Franco</label>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <input type="radio" name="selection_type-{{ day.isoformat() }}" value="pedido" id="pedido-{{ day.isoformat() }}" class="d-none" {% if existing_orders.get(day) and existing_orders.get(day).meal_type != 'Franco' %}checked{% endif %}>
+                    
+                    <h5><i class="bi bi-card-checklist"></i> Elige tu plato:</h5>
+                    {% if weekly_menu[day] %}
+                        {% for option in weekly_menu[day] %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="dish-{{ day.isoformat() }}" id="dish-{{ day.isoformat() }}-{{ option.id }}" value="{{ option.id }}" {% if existing_orders.get(day) and existing_orders.get(day).menu_id == option.id %}checked{% endif %} onclick="document.getElementById('pedido-{{ day.isoformat() }}').checked = true;">
+                            <label class="form-check-label" for="dish-{{ day.isoformat() }}-{{ option.id }}">
+                                <span class="badge bg-secondary">{{ option.menu_type }}</span> {{ option.description }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No hay menú disponible para este día.</p>
+                    {% endif %}
+
+                    <h5 class="mt-3"><i class="bi bi-clock"></i> ¿Almuerzo o Cena?</h5>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="meal_type-{{ day.isoformat() }}" id="almuerzo-{{ day.isoformat() }}" value="Almuerzo" {% if existing_orders.get(day) and existing_orders.get(day).meal_type == 'Almuerzo' %}checked{% endif %} onclick="document.getElementById('pedido-{{ day.isoformat() }}').checked = true;">
+                        <label class="form-check-label" for="almuerzo-{{ day.isoformat() }}">Almuerzo</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="meal_type-{{ day.isoformat() }}" id="cena-{{ day.isoformat() }}" value="Cena" {% if existing_orders.get(day) and existing_orders.get(day).meal_type == 'Cena' %}checked{% endif %} onclick="document.getElementById('pedido-{{ day.isoformat() }}').checked = true;">
+                        <label class="form-check-label" for="cena-{{ day.isoformat() }}">Cena</label>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end sticky-bottom bg-dark py-3">
+             {% if employee and employee != current_user %}
+                <a href="{{ url_for('manager_dashboard') }}" class="btn btn-secondary"><i class="bi bi-arrow-left-circle"></i> Volver a la lista</a>
+            {% endif %}
+            <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-check2-circle"></i> Guardar Cambios de la Semana</button>
+        </div>
+    </form>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h2>Panel de Encargado del Sector: {{ current_user.sector }}</h2>
+    <p>Aquí puedes ver y modificar los pedidos de los empleados de tu sector.</p>
+
+    <form action="{{ url_for('save_manager_selections') }}" method="POST">
+        {% for emp in employees %}
+            <div class="employee-card" style="border: 2px solid #007BFF; padding: 15px; margin-bottom: 25px; border-radius: 8px;">
+                <h3>{{ emp.name }}</h3>
+                
+                {% for day in week_dates %}
+                    <div class="day-container" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+                        <h4>{{ day.strftime('%A, %d de %B') }}</h4>
+                        
+                        <div class="dish-selection">
+                            <h5>1. Elige el plato:</h5>
+                            {% for option in weekly_menu[day] %}
+                                <p>
+                                    <input type="radio" 
+                                           name="dish-{{ emp.id }}-{{ day.isoformat() }}" 
+                                           value="{{ option.id }}" 
+                                           id="dish-{{ emp.id }}-{{ day.isoformat() }}-{{ option.id }}"
+                                           {% if existing_orders.get((emp.id, day)) and existing_orders.get((emp.id, day)).menu_id == option.id %}checked{% endif %}>
+                                    <label for="dish-{{ emp.id }}-{{ day.isoformat() }}-{{ option.id }}">
+                                        <strong>({{ option.menu_type }})</strong> - {{ option.description }}
+                                    </label>
+                                </p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="meal-type-selection" style="margin-top: 10px;">
+                            <h5>2. ¿Almuerzo o Cena?</h5>
+                            <p>
+                                <input type="radio" name="meal_type-{{ emp.id }}-{{ day.isoformat() }}" value="Almuerzo" id="almuerzo-{{ emp.id }}-{{ day.isoformat() }}"
+                                       {% if existing_orders.get((emp.id, day)) and existing_orders.get((emp.id, day)).meal_type == 'Almuerzo' %}checked{% endif %}>
+                                <label for="almuerzo-{{ emp.id }}-{{ day.isoformat() }}">Almuerzo</label>
+                                &nbsp;&nbsp;
+                                <input type="radio" name="meal_type-{{ emp.id }}-{{ day.isoformat() }}" value="Cena" id="cena-{{ emp.id }}-{{ day.isoformat() }}"
+                                       {% if existing_orders.get((emp.id, day)) and existing_orders.get((emp.id, day)).meal_type == 'Cena' %}checked{% endif %}>
+                                <label for="cena-{{ emp.id }}-{{ day.isoformat() }}">Cena</label>
+                            </p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 1.2em; background-color: #28a745;">Guardar Todos los Cambios del Sector</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Cargar Viandas - Sector: <span class="text-primary">{{ current_user.sector }}</span></h2>
+    <p class="text-white-50">Selecciona un empleado de la lista para ver y editar sus pedidos de la semana.</p>
+
+    <div class="list-group shadow-sm">
+        {% for emp in employees %}
+            <a href="{{ url_for('manager_select_meals', employee_id=emp.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                {{ emp.name }}
+                <span class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Gestionar Pedidos</span>
+            </a>
+        {% else %}
+            <div class="list-group-item">No hay empleados en tu sector. Puedes agregarlos en la sección "Gestionar Personal".</div>
+        {% endfor %}
+    </div>
+{% endblock %}

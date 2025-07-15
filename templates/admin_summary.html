@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h2>Resumen Diario de Pedidos</h2>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Seleccionar Día del Resumen</h5>
+            <div class="btn-group" role="group">
+                {% for day in week_dates %}
+                    <a href="{{ url_for('admin_summary', report_date_str=day.isoformat()) }}" class="btn {% if day == report_date %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                        {{ day|format_es('abbr') }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mb-3">Resumen para el: <span class="text-primary">{{ report_date|format_es('full') }}</span></h3>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center text-bg-primary shadow">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-sun"></i> TOTAL ALMUERZOS</h5>
+                    <p class="card-text fs-1 fw-bolder">{{ total_lunch }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center text-bg-success shadow">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-moon-stars"></i> TOTAL CENAS</h5>
+                    <p class="card-text fs-1 fw-bolder">{{ total_dinner }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center text-bg-secondary shadow">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-calculator"></i> GRAN TOTAL</h5>
+                    <p class="card-text fs-1 fw-bolder">{{ total_lunch + total_dinner }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header fs-5"><i class="bi bi-sun-fill text-warning"></i> Detalle de Almuerzos</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Plato</th>
+                                    <th class="text-end">Cantidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in lunch_summary %}
+                                <tr>
+                                    <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ item.menu_type }}</span></td>
+                                    <td>{{ item.description }}</td>
+                                    <td class="text-end fs-5">{{ item.total }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay almuerzos pedidos.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header fs-5"><i class="bi bi-moon-fill text-info"></i> Detalle de Cenas</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Plato</th>
+                                    <th class="text-end">Cantidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in dinner_summary %}
+                                <tr>
+                                    <td><span class="badge bg-secondary-subtle text-secondary-emphasis">{{ item.menu_type }}</span></td>
+                                    <td>{{ item.description }}</td>
+                                    <td class="text-end fs-5">{{ item.total }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay cenas pedidas.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

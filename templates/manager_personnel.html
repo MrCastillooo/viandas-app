@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Gestionar Personal <span class="text-white-50 fs-5">- Sector: {{ current_user.sector }}</span></h2>
+        <a href="{{ url_for('add_employee') }}" class="btn btn-success"><i class="bi bi-plus-circle"></i> Agregar Nuevo Empleado</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Email</th>
+                    <th scope="col" class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td>{{ emp.name }}</td>
+                    <td>{{ emp.email }}</td>
+                    <td class="text-end">
+                        <a href="{{ url_for('edit_employee', employee_id=emp.id) }}" class="btn btn-sm btn-outline-info me-2"><i class="bi bi-pencil-fill"></i> Editar</a>
+                        <form action="{{ url_for('delete_employee', employee_id=emp.id) }}" method="POST" class="form-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a {{ emp.name }}?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Gestionando Pedidos para: <strong>{{ employee.name }}</strong></h2>
+    <p>Para cada día, elige un solo plato e indica si es para Almuerzo o Cena.</p>
+
+    <form action="{{ url_for('save_employee_week', employee_id=employee.id) }}" method="POST">
+        {% for day in week_dates %}
+            <div class="day-container" style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                <h3>{{ day.strftime('%A, %d de %B') }}</h3>
+                
+                <div class="dish-selection">
+                    <h4>1. Elige el plato:</h4>
+                    {% for option in weekly_menu[day] %}
+                        <p>
+                            <input type="radio" name="dish-{{ day.isoformat() }}" value="{{ option.id }}" id="dish-{{ day.isoformat() }}-{{ option.id }}" {% if existing_orders.get(day) and existing_orders.get(day).menu_id == option.id %}checked{% endif %}>
+                            <label for="dish-{{ day.isoformat() }}-{{ option.id }}"><strong>({{ option.menu_type }})</strong> - {{ option.description }}</label>
+                        </p>
+                    {% endfor %}
+                </div>
+
+                <div class="meal-type-selection" style="margin-top: 15px;">
+                    <h4>2. ¿Almuerzo o Cena?</h4>
+                    <p>
+                        <input type="radio" name="meal_type-{{ day.isoformat() }}" value="Almuerzo" id="almuerzo-{{ day.isoformat() }}" {% if existing_orders.get(day) and existing_orders.get(day).meal_type == 'Almuerzo' %}checked{% endif %}>
+                        <label for="almuerzo-{{ day.isoformat() }}">Almuerzo</label>
+                        &nbsp;&nbsp;
+                        <input type="radio" name="meal_type-{{ day.isoformat() }}" value="Cena" id="cena-{{ day.isoformat() }}" {% if existing_orders.get(day) and existing_orders.get(day).meal_type == 'Cena' %}checked{% endif %}>
+                        <label for="cena-{{ day.isoformat() }}">Cena</label>
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+        <a href="{{ url_for('manager_dashboard') }}" class="btn" style="background-color: #6c757d;">Volver a la lista</a>
+        <button type="submit" class="btn" style="background-color: #28a745; float: right;">Guardar Cambios para {{ employee.name }}</button>
+    </form>
+{% endblock %}

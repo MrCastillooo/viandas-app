@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Gestionar Menú de la Semana</h2>
+    <p class="text-white-50">Selecciona la pestaña del día que deseas gestionar.</p>
+
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        {% for day in week_dates %}
+            <li class="nav-item" role="presentation">
+                {# CORRECCIÓN: Ahora usamos la nueva opción 'day_only' de nuestro filtro #}
+                <button class="nav-link {% if loop.first %}active{% endif %}" id="tab-{{ day.isoformat() }}" data-bs-toggle="tab" data-bs-target="#pane-{{ day.isoformat() }}" type="button" role="tab" aria-controls="pane-{{ day.isoformat() }}" aria-selected="{% if loop.first %}true{% else %}false{% endif %}">
+                    {{ day|format_es('day_only') }}
+                </button>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        {% for day, menus in grouped_menus.items() %}
+            <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="pane-{{ day.isoformat() }}" role="tabpanel" aria-labelledby="tab-{{ day.isoformat() }}" tabindex="0">
+                <div class="card card-body border-top-0 rounded-bottom">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Tipo de Plato</th>
+                                    <th>Descripción</th>
+                                    <th class="text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in menus %}
+                                    <tr>
+                                        <td><span class="badge bg-secondary">{{ item.menu_type }}</span></td>
+                                        <td>{{ item.description }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ url_for('admin_edit_menu_item', menu_id=item.id) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-pencil-fill"></i> Editar</a>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">No hay menú definido para este día.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

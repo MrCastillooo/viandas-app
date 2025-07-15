@@ -1,0 +1,14 @@
+Flask==3.0.3
+Werkzeug==3.0.3
+openpyxl
+PyMySQL
+Flask-Login
+Flask-SQLAlchemy
+SQLAlchemy
+Jinja2
+itsdangerous
+MarkupSafe
+click
+blinker
+gunicorn
+psycopg2-binary

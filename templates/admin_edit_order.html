@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h3>Editando Pedido</h3>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Empleado: <span class="text-primary">{{ order.user.name }}</span></h5>
+        <h6 class="card-subtitle mb-3 text-muted">Fecha: {{ order.order_date|format_es('full') }}</h6>
+        
+        <hr>
+
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label fw-bold">1. Selecciona el Estado del Empleado</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="selection_type" id="tipo_pedido" value="pedido" {% if order.meal_type != 'Franco' %}checked{% endif %} onchange="togglePedidoOptions()">
+                    <label class="form-check-label" for="tipo_pedido">
+                        Tiene Pedido
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="selection_type" id="tipo_franco" value="franco" {% if order.meal_type == 'Franco' %}checked{% endif %} onchange="togglePedidoOptions()">
+                    <label class="form-check-label" for="tipo_franco">
+                        Está de Franco
+                    </label>
+                </div>
+            </div>
+
+            <div id="pedido-options" style="display: {% if order.meal_type != 'Franco' %}block{% else %}none{% endif %};">
+                <hr>
+                <div class="mb-3">
+                    <label for="dish" class="form-label fw-bold">2. Cambia el Plato</label>
+                    <select class="form-select" name="dish" id="dish">
+                        <option value="">-- Elige un plato --</option>
+                        {% for dish in available_dishes %}
+                            <option value="{{ dish.id }}" {% if order.menu_id == dish.id %}selected{% endif %}>
+                                ({{ dish.menu_type }}) {{ dish.description }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">3. Cambia el Tipo de Comida</label>
+                    <div class="form-check">
+                         <input class="form-check-input" type="radio" name="meal_type" id="meal_almuerzo" value="Almuerzo" {% if order.meal_type == 'Almuerzo' %}checked{% endif %}>
+                         <label class="form-check-label" for="meal_almuerzo">Almuerzo</label>
+                    </div>
+                     <div class="form-check">
+                         <input class="form-check-input" type="radio" name="meal_type" id="meal_cena" value="Cena" {% if order.meal_type == 'Cena' %}checked{% endif %}>
+                         <label class="form-check-label" for="meal_cena">Cena</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Cambios</button>
+                <a href="{{ url_for('admin_dashboard', report_date_str=order.order_date.isoformat()) }}" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function togglePedidoOptions() {
+        var isFranco = document.getElementById('tipo_franco').checked;
+        var pedidoOptions = document.getElementById('pedido-options');
+        if (isFranco) {
+            pedidoOptions.style.display = 'none';
+        } else {
+            pedidoOptions.style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}

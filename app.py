@@ -26,11 +26,22 @@ except locale.Error:
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# Nueva configuración para leer la URL de la base de datos de Render
-# Nueva configuración para leer y CORREGIR la URL de la base de datos
+# Nueva configuración para leer, depurar y CORREGIR la URL de la base de datos
 db_url = os.environ.get('DATABASE_URL')
-if db_url and db_url.startswith("postgres://"):
+
+# --- INICIO DEL BLOQUE DE DEPURACIÓN ---
+if not db_url:
+    # Si la variable de entorno no existe, la aplicación se detendrá con un error claro.
+    raise ValueError("¡ERROR CRÍTICO: La variable de entorno DATABASE_URL no está configurada en Render!")
+
+# Imprimimos en los logs de Render los primeros caracteres de la URL para verificarla.
+# No la imprimimos completa para no exponer tu contraseña.
+print(f"--- URL de Base de Datos Detectada (inicio): {db_url[:20]}... ---")
+# --- FIN DEL BLOQUE DE DEPURACIÓN ---
+
+if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 
 app.config['SECRET_KEY'] = 'la-clave-mas-segura-del-universo-final'

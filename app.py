@@ -27,7 +27,11 @@ app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Nueva configuración para leer la URL de la base de datos de Render
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+# Nueva configuración para leer y CORREGIR la URL de la base de datos
+db_url = os.environ.get('DATABASE_URL')
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 
 app.config['SECRET_KEY'] = 'la-clave-mas-segura-del-universo-final'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

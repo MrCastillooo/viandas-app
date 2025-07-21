@@ -44,8 +44,17 @@ if db_url.startswith("postgres://"):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 
-# Lee la clave secreta de forma segura desde las variables de entorno
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+# Lee y verifica la clave secreta de forma segura desde las variables de entorno
+SECRET_KEY_FROM_ENV = os.environ.get('SECRET_KEY')
+
+if not SECRET_KEY_FROM_ENV:
+    # Si la variable no existe, la aplicación se detendrá con un error claro.
+    raise ValueError("¡ERROR CRÍTICO: La variable de entorno SECRET_KEY no está configurada en Render!")
+
+# Imprimimos en los logs para confirmar que se cargó (sin mostrar la clave)
+print(f"--- SECRET KEY Cargada: {'*' * len(SECRET_KEY_FROM_ENV)} (longitud: {len(SECRET_KEY_FROM_ENV)}) ---")
+
+app.config['SECRET_KEY'] = SECRET_KEY_FROM_ENV
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

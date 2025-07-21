@@ -3,7 +3,7 @@ import io
 import csv
 import uuid
 import locale
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, Response, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -24,16 +24,11 @@ except locale.Error:
 
 # --- CONFIGURACIÓN DE LA APP ---
 app = Flask(__name__)
-basedir = os.path.abspath(os.path.dirname(__file__))
-
-# --- Lógica de Configuración (con depuración) ---
 SECRET_KEY_FROM_ENV = os.environ.get('SECRET_KEY')
 DATABASE_URL_FROM_ENV = os.environ.get('DATABASE_URL')
 
-if not SECRET_KEY_FROM_ENV:
-    raise ValueError("¡ERROR CRÍTICO: La variable de entorno SECRET_KEY no está configurada!")
-if not DATABASE_URL_FROM_ENV:
-    raise ValueError("¡ERROR CRÍTICO: La variable de entorno DATABASE_URL no está configurada!")
+if not SECRET_KEY_FROM_ENV: raise ValueError("¡ERROR CRÍTICO: La variable de entorno SECRET_KEY no está configurada!")
+if not DATABASE_URL_FROM_ENV: raise ValueError("¡ERROR CRÍTICO: La variable de entorno DATABASE_URL no está configurada!")
 
 db_url = DATABASE_URL_FROM_ENV
 if db_url.startswith("postgres://"):
@@ -45,9 +40,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
-login_manager.login_view = 'login' # Si un usuario no logueado intenta entrar a una página protegida, se le envía aquí.
+login_manager.login_view = 'login'
 
-# --- MODELOS DE BASE DE DATOS (sin cambios) ---
+# --- MODELOS (sin cambios) ---
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True); name = db.Column(db.String(100), nullable=False); email = db.Column(db.String(100), unique=True, nullable=False); legajo = db.Column(db.String(20), unique=True, nullable=True); password_hash = db.Column(db.String(128)); sector = db.Column(db.String(50)); role = db.Column(db.String(20), default='empleado')
     @property
@@ -84,13 +79,11 @@ def get_active_week():
 
 @app.route('/')
 def index():
+    # La página de inicio ahora simplemente redirige al login si no estás autenticado
     if current_user.is_authenticated:
-        if current_user.role == 'admin':
-            return redirect(url_for('admin_summary'))
-        elif current_user.role == 'encargado':
-            return redirect(url_for('manager_dashboard'))
-        elif current_user.role == 'empleado':
-            return redirect(url_for('employee_dashboard'))
+        if current_user.role == 'admin': return redirect(url_for('admin_summary'))
+        if current_user.role == 'encargado': return redirect(url_for('manager_dashboard'))
+        if current_user.role == 'empleado': return redirect(url_for('employee_dashboard'))
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -101,21 +94,39 @@ def login():
     if request.method == 'POST':
         user = User.query.filter_by(email=request.form.get('email')).first()
         if user and user.check_password(request.form.get('password')):
-            login_user(user)
+            # Forzamos la sesión con remember=True
+            login_user(user, remember=True)
             flash(f'Bienvenido, {user.name}!', 'success')
-            return redirect(url_for('index'))
+            # Redirección directa al dashboard correspondiente
+            if user.role == 'admin': return redirect(url_for('admin_summary'))
+            if user.role == 'encargado': return redirect(url_for('manager_dashboard'))
+            if user.role == 'empleado': return redirect(url_for('employee_dashboard'))
         else:
             flash('Email o contraseña incorrectos.')
+            return redirect(url_for('login'))
+            
     return render_template('login.html')
 
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user()
-    flash('Has cerrado sesión exitosamente.')
-    return redirect(url_for('login'))
+    logout_user(); flash('Has cerrado sesión exitosamente.'); return redirect(url_for('login'))
 
-# ... (El resto de las rutas ( dashboards, save_week, manage_personnel, export, etc. ) se mantienen exactamente igual que antes)...
+# ... El resto de las rutas no cambian ...
+@app.route('/dashboard/empleado')
+@login_required
+def employee_dashboard():
+    # ...
+    # El contenido de esta función y todas las demás es el mismo que antes
+    # ...
+    if current_user.role != 'empleado': return redirect(url_for('index'))
+    week_dates = get_active_week(); start_date, end_date = week_dates[0], week_dates[-1]
+    menus_query = Menu.query.filter(Menu.menu_date.between(start_date, end_date)).all()
+    weekly_menu = {day: [m for m in menus_query if m.menu_date == day] for day in week_dates}
+    orders_query = Order.query.filter(Order.user_id == current_user.id, Order.order_date.between(start_date, end_date)).all()
+    existing_orders = {order.order_date: order for order in orders_query}
+    return render_template('selection_template.html', weekly_menu=weekly_menu, week_dates=week_dates, existing_orders=existing_orders, employee=current_user, title=f"Tus Pedidos de la Semana, {current_user.name}", save_url=url_for('save_week'))
+
 def process_week_selection(user_id):
     week_dates = get_active_week()
     for day in week_dates:
@@ -132,17 +143,6 @@ def process_week_selection(user_id):
         else:
             if existing_order: db.session.delete(existing_order)
     db.session.commit()
-
-@app.route('/dashboard/empleado')
-@login_required
-def employee_dashboard():
-    if current_user.role != 'empleado': return redirect(url_for('index'))
-    week_dates = get_active_week(); start_date, end_date = week_dates[0], week_dates[-1]
-    menus_query = Menu.query.filter(Menu.menu_date.between(start_date, end_date)).all()
-    weekly_menu = {day: [m for m in menus_query if m.menu_date == day] for day in week_dates}
-    orders_query = Order.query.filter(Order.user_id == current_user.id, Order.order_date.between(start_date, end_date)).all()
-    existing_orders = {order.order_date: order for order in orders_query}
-    return render_template('selection_template.html', weekly_menu=weekly_menu, week_dates=week_dates, existing_orders=existing_orders, employee=current_user, title=f"Tus Pedidos de la Semana, {current_user.name}", save_url=url_for('save_week'))
 
 @app.route('/save_week', methods=['POST'])
 @login_required
@@ -275,7 +275,7 @@ def export_excel(report_date_str):
         if order:
             estado = order.meal_type
             if order.meal_type != 'Franco' and menu: tipo_code = type_mapping.get(menu.menu_type, '?')
-        data_row = [user.name, '', tipo_code, estado, '', '', '', '', '']
+        data_row = [user.name, user.legajo or '', tipo_code, estado, '', '', '', '', '']
         for i, value in enumerate(data_row, 1):
             cell = ws.cell(row=current_row, column=i, value=value); cell.border = thin_border; cell.font = font_data; cell.alignment = alignment_center_wrap
         ws.row_dimensions[current_row].height = 40; current_row += 1

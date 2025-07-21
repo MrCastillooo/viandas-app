@@ -15,7 +15,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('login') }}"><i class="bi bi-egg-fried"></i> Gestor de Viandas</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}"><i class="bi bi-egg-fried"></i> Gestor de Viandas</a>
             <div class="d-flex">
                 <div class="navbar-nav">
                     {% if current_user.is_authenticated %}
@@ -27,8 +27,8 @@
                         {% elif current_user.role == 'encargado' %}
                              <a class="nav-link" href="{{ url_for('manager_dashboard') }}"><i class="bi bi-list-check"></i> Cargar Viandas</a>
                              <a class="nav-link" href="{{ url_for('manager_personnel') }}"><i class="bi bi-people"></i> Gestionar Personal</a>
-                        {% else %}
-                             <a class="nav-link active" href="{{ url_for('index') }}">Mis Pedidos</a>
+                        {% elif current_user.role == 'empleado' %}
+                             <a class="nav-link active" href="{{ url_for('employee_dashboard') }}">Mis Pedidos</a>
                         {% endif %}
                         
                         <a class="nav-link" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Salir ({{ current_user.name }})</a>
